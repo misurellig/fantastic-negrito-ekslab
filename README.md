@@ -102,6 +102,7 @@ EoF
 To have the role working we'll create a RoleBinding resource.
 
 ```bash
+cat << EoF > deployuser-role-binding.yaml
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
