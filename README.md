@@ -50,6 +50,11 @@ helm -n webserver-ns \
     --set cloneHtdocsFromGit.repository="https://github.com/misurellig/hello-webpage.git" \
     --set cloneHtdocsFromGit.branch="master"
 ```
+To follow the status of the deployment:
+
+```
+kubectl -n webserver-ns rollout status deployment apache
+```
 
 ## Setup deployment user
 
