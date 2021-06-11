@@ -62,8 +62,8 @@ kubectl get configmap -n kube-system aws-auth -o yaml | grep -v "creationTimesta
 # Append the deploy-user mapping to the existing configMap
 cat << EoF >> aws-auth.yaml
 data:
-  mapUsers: |
-    - userarn: arn:aws:iam::111111111111:user/deploy-user # Change here with proper ARN
+  mapRoles: |
+    - rolearn: arn:aws:iam::111111111111:role/DeployRole # Change here with proper ARN
       username: deploy-user
 EoF
 ```
@@ -128,8 +128,6 @@ kubectl apply -f deployuser-role-binding.yaml
 
 ## Update deployment manually using deploy-user
 
-By using the deploy-user, equipped with the proper permissions described in webserver-deploy-role.yaml, we'll use helm to upgrade the chart deployment to have two pods always running in two groups of nodes respectively tagged with zona-1 and zona-2.
-
 We'll use the [node affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity) feature to have at least 2 pods running a node labeled with `zone=zona-1` and 2 other nodes running a node labeled with `zone=zona-2`.
 
 Let's add the required labels to each of the two involved nodes.
@@ -148,6 +146,14 @@ export SECOND_NODE_NAME=$(kubectl get nodes -o json | jq -r '.items[1].metadata.
 
 # Add the label to the second node
 kubectl label nodes ${SECOND_NODE_NAME} zone=zona-2
+```
+
+By switching to the deploy-user, equipped with the proper permissions described in webserver-deploy-role.yaml, we'll use helm to upgrade the chart deployment to have two pods always running in two groups of nodes respectively tagged with zona-1 and zona-2.
+
+First of all, from the deploy-user environment, let's update the kubeconfig.
+
+```
+aws eks update-kubeconfig --name fantastic-negrito
 ```
 
 We can now use the `nodeAffinityPreset.type`, `nodeAffinityPreset.key`, `nodeAffinityPreset.values` helm chart properties to have the 4 pods splitted into the 2 nodes evenly.
